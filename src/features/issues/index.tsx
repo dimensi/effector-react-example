@@ -1,6 +1,7 @@
 import React, { FC } from "react";
 import { useStore, useGate } from "effector-react";
 import { submitForm, issuesGate, $meta } from "./issue.store";
+import { IssuesList } from './issues-list'
 
 export const Issues: FC = () => {
   useGate(issuesGate);
@@ -8,7 +9,7 @@ export const Issues: FC = () => {
 
   return (
     <div>
-      <div>
+      <div style={{ marginBottom: 24 }}>
         <form onSubmit={submitForm}>
           <input
             type="text"
@@ -25,6 +26,7 @@ export const Issues: FC = () => {
           <button>change</button>
         </form>
       </div>
+      <IssuesList />
     </div>
   );
 };

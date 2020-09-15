@@ -46,7 +46,7 @@ const fxOnIssues = createEffect({
 });
 
 const page = createStore(0);
-const $issues = createStore<Issue[]>([]).on(
+export const $issues = createStore<Issue[]>([]).on(
   fxOnIssues.doneData,
   (_, data) => data.issues
 );
