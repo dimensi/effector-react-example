@@ -11,13 +11,13 @@ export function IssuesList() {
   ));
 }
 
-function IssueItem({ issue: { id, title, user, labels } }: { issue: Issue }) {
+function IssueItem({ issue: { number, title, user, labels } }: { issue: Issue }) {
   return (
     <article style={{ marginBottom: 24 }}>
       <header style={{ display: "flex", alignItems: "center" }}>
-        <Link to={`/issues/${id}`}>
+        <Link to={`/issues/${number}`}>
           <strong>
-            #{id}: {title}
+            #{number}: {title}
           </strong>
         </Link>
         <figure>

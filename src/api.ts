@@ -1,5 +1,5 @@
-import axios from "axios";
-import parseLink, { Links } from "parse-link-header";
+import axios from 'axios';
+import parseLink, {Links} from 'parse-link-header';
 
 export interface Label {
   id: number;
@@ -20,7 +20,7 @@ export interface Issue {
   body: string;
   labels: Label[];
   comments_url: string;
-  state: "open" | "closed";
+  state: 'open' | 'closed';
   comments: number;
 }
 
@@ -45,6 +45,11 @@ export interface IssuesResult {
   issues: Issue[];
 }
 
+export interface ErrorMessage {
+  documentation_url: string,
+  message: string
+}
+
 const isLastPage = (pageLinks: Links) => {
   return (
     Object.keys(pageLinks).length === 2 && pageLinks.first && pageLinks.prev
@@ -67,7 +72,7 @@ const getPageCount = (pageLinks: Links) => {
 export async function getIssues(
   org: string,
   repo: string,
-  page = 1
+  page = 1,
 ): Promise<IssuesResult> {
   const url = `https://api.github.com/repos/${org}/${repo}/issues?per_page=25&page=${page}`;
 
@@ -83,7 +88,7 @@ export async function getIssues(
     return {
       pageLinks,
       pageCount,
-      issues: issuesResponse.data
+      issues: issuesResponse.data,
     };
   } catch (err) {
     throw err;
@@ -93,18 +98,18 @@ export async function getIssues(
 export async function getRepoDetails(org: string, repo: string) {
   const url = `https://api.github.com/repos/${org}/${repo}`;
 
-  const { data } = await axios.get<RepoDetails>(url);
+  const {data} = await axios.get<RepoDetails>(url);
   return data;
 }
 
 export async function getIssue(org: string, repo: string, number: number) {
   const url = `https://api.github.com/repos/${org}/${repo}/issues/${number}`;
 
-  const { data } = await axios.get<Issue>(url);
+  const {data} = await axios.get<Issue>(url);
   return data;
 }
 
 export async function getComments(url: string) {
-  const { data } = await axios.get<Comment[]>(url);
+  const {data} = await axios.get<Comment[]>(url);
   return data;
 }

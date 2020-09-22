@@ -1,24 +1,24 @@
-import { FormEvent } from "react";
+import {FormEvent} from 'react';
 import {
-  createStore,
-  combine,
-  createEvent,
-  createEffect,
   attach,
+  combine,
+  createEffect,
+  createEvent,
+  createStore,
+  forward,
   guard,
-  forward
-} from "effector";
-import { createGate } from "effector-react";
-import { getIssues, Issue } from "../../api";
+} from 'effector';
+import {createGate} from 'effector-react';
+import {getIssues, Issue} from '../../api';
 
 const defaultRepo = {
-  org: "alfa-laboratory",
-  repo: "core-components"
+  org: "facebook",
+  repo: "react"
 };
 
-type RepoMeta = typeof defaultRepo;
+export type RepoMeta = typeof defaultRepo;
 
-const repo = createStore(defaultRepo);
+export const $repo = createStore(defaultRepo);
 
 const updateRepo = createEvent<RepoMeta>();
 
@@ -35,7 +35,7 @@ export const submitForm = updateRepo.prepend<FormEvent<HTMLFormElement>>(
   }
 );
 
-repo.on(updateRepo, (_, data) => data);
+$repo.on(updateRepo, (_, data) => data);
 
 export const issuesGate = createGate("Issues Gate");
 
@@ -51,10 +51,10 @@ export const $issues = createStore<Issue[]>([]).on(
   (_, data) => data.issues
 );
 
-export const $meta = combine({ page, repo });
+export const $meta = combine({ page, repo: $repo });
 
 const fxGetIssues = attach({
-  source: combine({ repo, page }),
+  source: combine({ repo: $repo, page }),
   effect: fxOnIssues
 });
 
@@ -65,6 +65,6 @@ guard({
 });
 
 forward({
-  from: repo.updates,
+  from: $repo.updates,
   to: fxGetIssues
 });
