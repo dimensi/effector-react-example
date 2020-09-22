@@ -1,7 +1,7 @@
 import { useList } from "effector-react";
 import React from "react";
 import { Issue } from "../../api";
-import { $issues } from "./issue.store";
+import { $issues } from "./issues.store";
 import { Link } from "react-router-dom";
 
 

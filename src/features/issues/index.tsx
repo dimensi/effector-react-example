@@ -1,6 +1,6 @@
 import React, { FC } from "react";
 import { useStore, useGate } from "effector-react";
-import { submitForm, issuesGate, $meta } from "./issue.store";
+import { submitForm, issuesGate, $meta } from "./issues.store";
 import { IssuesList } from './issues-list'
 
 export const Issues: FC = () => {
