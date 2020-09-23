@@ -40,7 +40,6 @@ export const issuesGate = createGate<IssuesRouteParams>('Issues Gate');
 
 const fxOnIssues = createEffect(
   async ({repo: {repo, org}, page}: {repo: RepoMeta; page: number}) => {
-    console.count('called')
     try {
       return await getIssues(org, repo);
     } catch (err) {
