@@ -1,14 +1,15 @@
 import {createGate} from 'effector-react';
-import {attach, createEffect, createStore, forward, sample} from 'effector';
+import {attach, createEffect, createStore, forward} from 'effector';
 import {$repo, RepoMeta} from '../issues/issues.store';
-import {getComments, getIssue, Issue, Comment, ErrorMessage} from '../../api';
+import {Comment, ErrorMessage, getComments, getIssue, Issue} from '../../api';
 import {AxiosError} from 'axios';
+import {$error} from '../errors.store';
 
 export interface IssueRouteParams {
-  id: string
+  id: string;
 }
 
-type OnGetIssueParams = RepoMeta & IssueRouteParams
+type OnGetIssueParams = RepoMeta & IssueRouteParams;
 
 export const issueGate = createGate<IssueRouteParams>('issue gate');
 
@@ -22,7 +23,7 @@ const onGetIssue = createEffect(async ({org, repo, id}: OnGetIssueParams) => {
 
 const fxGetIssue = attach({
   effect: onGetIssue,
-  mapParams: ((params: IssueRouteParams, states) => ({...states, ...params})),
+  mapParams: (params: IssueRouteParams, states) => ({...states, ...params}),
   source: $repo,
 });
 
@@ -35,13 +36,12 @@ export const $issue = createStore<Issue | null>(null)
   .reset(issueGate.close);
 
 export const $comments = createStore<Comment[]>([])
-  .on(fxGetIssueComments.doneData, ((state, payload) => payload))
+  .on(fxGetIssueComments.doneData, (state, payload) => payload)
   .reset(issueGate.close);
 
-export const $error = createStore<ErrorMessage | null>(null)
-  .on(onGetIssue.failData, (state, payload) => {
-    return payload as unknown as ErrorMessage;
-  });
+$error.on(onGetIssue.failData, (state, payload) => {
+  return (payload as unknown) as ErrorMessage;
+});
 
 forward({
   from: issueGate.open,

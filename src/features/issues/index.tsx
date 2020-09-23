@@ -2,9 +2,10 @@ import React, { FC } from "react";
 import { useStore, useGate } from "effector-react";
 import { submitForm, issuesGate, $meta } from "./issues.store";
 import { IssuesList } from './issues-list'
+import { useParams } from 'react-router-dom'
 
 export const Issues: FC = () => {
-  useGate(issuesGate);
+  useGate(issuesGate, useParams());
   const { repo } = useStore($meta);
 
   return (

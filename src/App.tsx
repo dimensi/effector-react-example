@@ -1,22 +1,31 @@
-import React from "react";
-import "./styles.css";
-import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
-import { Issues } from "./features/issues";
-import { Issue } from './features/issue'
+import React from 'react';
+import './styles.css';
+import {Route, Switch, Redirect} from 'react-router-dom';
+import {Issues} from './features/issues';
+import {Issue} from './features/issue';
+import {defaultRepo} from './config';
+import {useStore} from 'effector-react';
+import {$error} from './features/errors.store';
 
 export default function App() {
+  const error = useStore($error)
   return (
-    <Router>
-      <div className="App">
+    <div className="App">
+      {error ? (
+        <div>{error.message}</div>
+      ) : (
         <Switch>
-          <Route path="/" exact>
+          <Route path="/:org/:repo" exact>
             <Issues />
           </Route>
-          <Route path="/issues/:id">
+          <Route path="/:org/:repo/issues/:id">
             <Issue />
           </Route>
+          <Route>
+            <Redirect to={`/${defaultRepo.org}/${defaultRepo.repo}`} />
+          </Route>
         </Switch>
-      </div>
-    </Router>
+      )}
+    </div>
   );
 }

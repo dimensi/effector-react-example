@@ -1,8 +1,8 @@
 import { useList } from "effector-react";
 import React from "react";
 import { Issue } from "../../api";
-import { $issues } from "./issues.store";
-import { Link } from "react-router-dom";
+import {$issues, IssuesRouteParams} from './issues.store';
+import { Link, useParams } from "react-router-dom";
 
 
 export function IssuesList() {
@@ -12,10 +12,11 @@ export function IssuesList() {
 }
 
 function IssueItem({ issue: { number, title, user, labels } }: { issue: Issue }) {
+  const params = useParams<IssuesRouteParams>()
   return (
     <article style={{ marginBottom: 24 }}>
       <header style={{ display: "flex", alignItems: "center" }}>
-        <Link to={`/issues/${number}`}>
+        <Link to={`/${params.org}/${params.repo}/issues/${number}`}>
           <strong>
             #{number}: {title}
           </strong>
