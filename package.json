@@ -9,7 +9,6 @@
     "@types/react-router-dom": "5.1.5",
     "axios": "0.20.0",
     "effector": "21.3.0",
-    "effector-logger": "0.6.1",
     "effector-react": "21.0.6",
     "parse-link-header": "1.0.1",
     "react": "^16.12.0",
@@ -21,6 +20,7 @@
   "devDependencies": {
     "@types/react": "16.9.19",
     "@types/react-dom": "16.9.5",
+    "effector-logger": "^0.9.0",
     "prettier": "^2.1.2",
     "typescript": "3.7.5"
   },

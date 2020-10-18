@@ -41,20 +41,28 @@ export const issuesGate = createGate<IssuesRouteParams>('Issues Gate');
 const fxOnIssues = createEffect<{repo: RepoMeta; page: number}, IssuesResult, ErrorMessage> ({
   async handler ({repo: {repo, org}, page}) {
     try {
-      return await getIssues(org, repo);
+      return await getIssues(org, repo, page);
     } catch (err) {
       throw (err as AxiosError<ErrorMessage>).response!.data;
     }
   }
 });
 
-const page = createStore(0);
+export const pageChanged = createEvent<number>();
+
+const page = createStore(1).reset(updateRepo);
+const lastPage = createStore(1);
+
+page.on(pageChanged, (_, newPage) => newPage)
+
 export const $issues = createStore<Issue[]>([]).on(
   fxOnIssues.doneData,
   (_, data) => data.issues,
 );
 
-export const $meta = combine({page, repo: $repo});
+lastPage.on(fxOnIssues.doneData, (_, payload) => payload.pageCount)
+
+export const $meta = combine({page, lastPage, repo: $repo});
 
 const fxGetIssues = attach({
   source: combine({repo: $repo, page}),
@@ -70,16 +78,24 @@ forward({
 });
 
 forward({
-  from: $repo.updates,
+  from: $meta.updates,
   to: fxGetIssues,
 });
 
-$repo.updates.watch((state) => {
+$repo.updates.watch(({ org, repo }) => {
+  const repoURL = [org, repo].join('/')
   if (
-    !routerHistory.location.pathname.includes(`/${state.org}/${state.repo}`)
+    !routerHistory.location.pathname.includes(`/${repoURL}`)
   ) {
-    routerHistory.push(`/${state.org}/${state.repo}/`);
+    routerHistory.push(`/${repoURL}/`);
   }
 });
+
+page.updates.watch((newPage) => {
+  routerHistory.push({
+    ...routerHistory.location,
+    search: newPage > 1 ? `page=${newPage}` : '',
+  })
+})
 
 $error.on(fxOnIssues.failData, (state, payload) => payload);
