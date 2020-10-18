@@ -13,11 +13,13 @@ type OnGetIssueParams = RepoMeta & IssueRouteParams;
 
 export const issueGate = createGate<IssueRouteParams>('issue gate');
 
-const onGetIssue = createEffect(async ({org, repo, id}: OnGetIssueParams) => {
-  try {
-    return getIssue(org, repo, Number(id));
-  } catch (err) {
-    throw (err as AxiosError<ErrorMessage>).response!.data;
+const onGetIssue = createEffect<OnGetIssueParams, Issue, ErrorMessage>({
+  async handler ({org, repo, id}: OnGetIssueParams) {
+    try {
+      return getIssue(org, repo, Number(id));
+    } catch (err) {
+      throw (err as AxiosError<ErrorMessage>).response!.data;
+    }
   }
 });
 
@@ -39,9 +41,7 @@ export const $comments = createStore<Comment[]>([])
   .on(fxGetIssueComments.doneData, (state, payload) => payload)
   .reset(issueGate.close);
 
-$error.on(onGetIssue.failData, (state, payload) => {
-  return (payload as unknown) as ErrorMessage;
-});
+$error.on(onGetIssue.failData, (state, payload) => payload);
 
 forward({
   from: issueGate.open,

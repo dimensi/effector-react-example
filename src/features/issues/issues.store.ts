@@ -8,7 +8,7 @@ import {
   forward,
 } from 'effector';
 import {createGate} from 'effector-react';
-import {ErrorMessage, getIssues, Issue} from '../../api';
+import {ErrorMessage, getIssues, Issue, IssuesResult} from '../../api';
 import {defaultRepo} from '../../config';
 import {routerHistory} from '../../history';
 import {AxiosError} from 'axios';
@@ -38,15 +38,15 @@ $repo.on(updateRepo, (_, data) => data);
 
 export const issuesGate = createGate<IssuesRouteParams>('Issues Gate');
 
-const fxOnIssues = createEffect(
-  async ({repo: {repo, org}, page}: {repo: RepoMeta; page: number}) => {
+const fxOnIssues = createEffect<{repo: RepoMeta; page: number}, IssuesResult, ErrorMessage> ({
+  async handler ({repo: {repo, org}, page}) {
     try {
       return await getIssues(org, repo);
     } catch (err) {
       throw (err as AxiosError<ErrorMessage>).response!.data;
     }
-  },
-);
+  }
+});
 
 const page = createStore(0);
 export const $issues = createStore<Issue[]>([]).on(
@@ -82,6 +82,4 @@ $repo.updates.watch((state) => {
   }
 });
 
-$error.on(fxOnIssues.failData, (state, payload) => {
-  return (payload as unknown) as ErrorMessage;
-});
+$error.on(fxOnIssues.failData, (state, payload) => payload);
