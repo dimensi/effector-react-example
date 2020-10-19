@@ -1,13 +1,12 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 export function Pagination({
   page,
   lastPage,
-  onChange,
 }: {
   page: number;
   lastPage: number;
-  onChange: (page: number) => void;
 }) {
   if (lastPage === 1) return null;
 
@@ -15,8 +14,6 @@ export function Pagination({
     <ul>
       {Array.from({length: lastPage}, (_, idx) => {
         const itemPage = idx + 1;
-        const url = new URL(window.location.toString())
-        url.searchParams.set('page', itemPage.toString())
         return (
           <li
             key={itemPage}
@@ -30,14 +27,9 @@ export function Pagination({
               lineHeight: '20px',
               cursor: 'pointer'
             }}>
-            <a
-              href={url.toString()}
-              onClick={(event) => {
-                event.preventDefault();
-                onChange(itemPage);
-              }}>
+            <Link to={location => ({...location, search: `page=${itemPage}`})}>
               {itemPage}
-            </a>
+            </Link>
           </li>
         );
       })}

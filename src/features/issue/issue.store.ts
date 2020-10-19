@@ -1,36 +1,36 @@
 import {createGate} from 'effector-react';
 import {attach, createEffect, createStore, forward} from 'effector';
-import {$repo, RepoMeta} from '../issues/issues.store';
 import {Comment, ErrorMessage, getComments, getIssue, Issue} from '../../api';
 import {AxiosError} from 'axios';
 import {$error} from '../errors.store';
+import {$repository, TRepo} from '../repository.store';
 
 export interface IssueRouteParams {
   id: string;
 }
 
-type OnGetIssueParams = RepoMeta & IssueRouteParams;
+type OnGetIssueParams = TRepo & IssueRouteParams;
 
 export const issueGate = createGate<IssueRouteParams>('issue gate');
 
 const onGetIssue = createEffect<OnGetIssueParams, Issue, ErrorMessage>({
-  async handler ({org, repo, id}: OnGetIssueParams) {
+  async handler({org, name, id}: OnGetIssueParams) {
     try {
-      return getIssue(org, repo, Number(id));
+      return getIssue(org, name, Number(id));
     } catch (err) {
       throw (err as AxiosError<ErrorMessage>).response!.data;
     }
-  }
+  },
 });
 
-const fxGetIssue = attach({
-  effect: onGetIssue,
-  mapParams: (params: IssueRouteParams, states) => ({...states, ...params}),
-  source: $repo,
-});
-
-const fxGetIssueComments = createEffect(({comments_url}: Issue) => {
-  return getComments(comments_url);
+const fxGetIssueComments = createEffect<Issue, Comment[], ErrorMessage>({
+  handler: ({comments_url}: Issue) => {
+    try {
+      return getComments(comments_url);
+    } catch (err) {
+      throw (err as AxiosError<ErrorMessage>).response!.data;
+    }
+  },
 });
 
 export const $issue = createStore<Issue | null>(null)
@@ -41,7 +41,11 @@ export const $comments = createStore<Comment[]>([])
   .on(fxGetIssueComments.doneData, (state, payload) => payload)
   .reset(issueGate.close);
 
-$error.on(onGetIssue.failData, (state, payload) => payload);
+const fxGetIssue = attach({
+  effect: onGetIssue,
+  mapParams: (params: IssueRouteParams, states) => ({...states, ...params}),
+  source: $repository,
+});
 
 forward({
   from: issueGate.open,
@@ -52,3 +56,6 @@ forward({
   from: onGetIssue.doneData,
   to: fxGetIssueComments,
 });
+
+$error.on(onGetIssue.failData, (state, payload) => payload);
+$error.on(fxGetIssueComments.failData, (state, payload) => payload);

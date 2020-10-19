@@ -1,34 +1,48 @@
-import React, { FC } from "react";
-import { useStore, useGate } from "effector-react";
-import { submitForm, issuesGate, $meta, pageChanged } from "./issues.store";
-import { IssuesList } from './issues-list'
-import { useParams } from 'react-router-dom'
-import { Pagination } from './pagination'
+import React, {FC, FormEvent, useCallback} from 'react';
+import {useGate, useStore} from 'effector-react';
+import {$meta, issuesGate} from './issues.store';
+import {IssuesList} from './issues-list';
+import {useHistory} from 'react-router-dom';
+import {Pagination} from './pagination';
+import {$repository} from '../repository.store';
 
 export const Issues: FC = () => {
-  useGate(issuesGate, useParams());
-  const { repo, page, lastPage } = useStore($meta);
+  useGate(issuesGate)
+  const routerHistory = useHistory()
+  const { page, lastPage } = useStore($meta);
+  const repository = useStore($repository)
+
+  const onSubmit = useCallback((event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const form = event.target as HTMLFormElement;
+    const { value: org } = form.elements.namedItem('org') as HTMLInputElement;
+    const { value: repo } = form.elements.namedItem('repo') as HTMLInputElement;
+
+    if (![org, repo].every(Boolean)) return
+
+    routerHistory.push(`/${org}/${repo}/`)
+  }, [routerHistory])
 
   return (
     <div>
       <div style={{ marginBottom: 24 }}>
-        <form onSubmit={submitForm}>
+        <form onSubmit={onSubmit}>
           <input
             type="text"
             name="org"
             placeholder="org"
-            defaultValue={repo.org}
+            defaultValue={repository.org}
           />
           <input
             type="text"
             name="repo"
             placeholder="repo"
-            defaultValue={repo.repo}
+            defaultValue={repository.name}
           />
           <button>change</button>
         </form>
       </div>
-      <Pagination page={page} lastPage={lastPage} onChange={pageChanged}/>
+      <Pagination page={page} lastPage={lastPage} />
       <IssuesList />
     </div>
   );

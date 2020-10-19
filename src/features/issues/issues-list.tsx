@@ -1,22 +1,30 @@
-import { useList } from "effector-react";
-import React from "react";
-import { Issue } from "../../api";
-import {$issues, IssuesRouteParams} from './issues.store';
-import { Link, useParams } from "react-router-dom";
-
+import {useList, useStore} from 'effector-react';
+import React from 'react';
+import {Issue} from '../../api';
+import {$issues} from './issues.store';
+import {Link} from 'react-router-dom';
+import {$repository, TRepo} from '../repository.store';
 
 export function IssuesList() {
+  const repository = useStore($repository);
   return useList($issues, (issue) => (
-    <IssueItem issue={issue} key={issue.id} />
+    <IssueItem issue={issue} key={issue.id} repository={repository} />
   ));
 }
 
-function IssueItem({ issue: { number, title, user, labels } }: { issue: Issue }) {
-  const params = useParams<IssuesRouteParams>()
+interface IssueItemProps {
+  issue: Issue;
+  repository: TRepo;
+}
+
+function IssueItem({
+  issue: {number, title, user, labels},
+  repository,
+}: IssueItemProps) {
   return (
-    <article style={{ marginBottom: 24 }}>
-      <header style={{ display: "flex", alignItems: "center" }}>
-        <Link to={`/${params.org}/${params.repo}/issues/${number}`}>
+    <article style={{marginBottom: 24}}>
+      <header style={{display: 'flex', alignItems: 'center'}}>
+        <Link to={`/${repository.org}/${repository.name}/issues/${number}`}>
           <strong>
             #{number}: {title}
           </strong>
