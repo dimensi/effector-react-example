@@ -16,7 +16,7 @@ export const issueGate = createGate<IssueRouteParams>('issue gate');
 const onGetIssue = createEffect<OnGetIssueParams, Issue, ErrorMessage>({
   async handler({org, name, id}: OnGetIssueParams) {
     try {
-      return getIssue(org, name, Number(id));
+      return await getIssue(org, name, Number(id));
     } catch (err) {
       throw (err as AxiosError<ErrorMessage>).response!.data;
     }
@@ -24,9 +24,9 @@ const onGetIssue = createEffect<OnGetIssueParams, Issue, ErrorMessage>({
 });
 
 const fxGetIssueComments = createEffect<Issue, Comment[], ErrorMessage>({
-  handler: ({comments_url}: Issue) => {
+  async handler({comments_url}: Issue) {
     try {
-      return getComments(comments_url);
+      return await getComments(comments_url);
     } catch (err) {
       throw (err as AxiosError<ErrorMessage>).response!.data;
     }
