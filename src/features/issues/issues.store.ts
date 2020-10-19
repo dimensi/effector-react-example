@@ -18,9 +18,8 @@ import {getPageFromSearch} from '../../utils';
 export const issuesGate = createGate('issue gate');
 
 const pageChanged = createEvent<number | undefined>('page changed');
-const routeChanged = pageChanged.prepend(getPageFromSearch);
 
-const fxOnIssues = createEffect<
+const getIssuesFx = createEffect<
   {repository: TRepo; page: number},
   IssuesResult,
   ErrorMessage
@@ -39,30 +38,34 @@ const page = createStore(
 ).reset(guard({source: updateRepo, filter: issuesGate.status}));
 
 const lastPage = createStore(1);
-export const $meta = combine({page, lastPage});
-export const $issues = createStore<Issue[]>([]);
+export const issues = createStore<Issue[]>([]);
+
+export const $issuesCombine = combine({
+  page,
+  lastPage,
+  issues,
+  repository: $repository,
+});
 
 page.on(pageChanged.filter({fn: Boolean}), (state, payload) => payload);
-$issues.on(fxOnIssues.doneData, (_, data) => data.issues);
-lastPage.on(fxOnIssues.doneData, (_, payload) => payload.pageCount);
+issues.on(getIssuesFx.doneData, (_, data) => data.issues);
+lastPage.on(getIssuesFx.doneData, (_, payload) => payload.pageCount);
 
-const fxGetIssues = attach({
+const attachedGetIssues = attach({
   source: combine({repository: $repository, page}),
-  effect: fxOnIssues,
+  effect: getIssuesFx,
 });
 
 forward({
-  from: issuesGate.open,
-  to: fxGetIssues,
+  from: [issuesGate.open, pageChanged, $repository.updates],
+  to: attachedGetIssues,
 });
 
-forward({
-  from: page.updates,
-  to: fxGetIssues,
-});
-
-$error.on(fxOnIssues.failData, (state, payload) => payload);
+$error.on(getIssuesFx.failData, (state, payload) => payload);
 
 routerHistory.listen((location) => {
-  routeChanged(location.search);
+  const page = getPageFromSearch(location.search);
+  if (page) {
+    pageChanged(page);
+  }
 });

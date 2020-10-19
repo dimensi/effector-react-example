@@ -1,15 +1,22 @@
-import {useList, useStore} from 'effector-react';
 import React from 'react';
 import {Issue} from '../../api';
-import {$issues} from './issues.store';
 import {Link} from 'react-router-dom';
-import {$repository, TRepo} from '../repository.store';
+import {TRepo} from '../repository.store';
 
-export function IssuesList() {
-  const repository = useStore($repository);
-  return useList($issues, (issue) => (
-    <IssueItem issue={issue} key={issue.id} repository={repository} />
-  ));
+export function IssuesList({
+  repository,
+  issues,
+}: {
+  repository: TRepo;
+  issues: Issue[];
+}) {
+  return (
+    <>
+      {issues.map((issue) => (
+        <IssueItem issue={issue} key={issue.id} repository={repository} />
+      ))}
+    </>
+  );
 }
 
 interface IssueItemProps {

@@ -1,32 +1,33 @@
 import React, {FC, FormEvent, useCallback} from 'react';
 import {useGate, useStore} from 'effector-react';
-import {$meta, issuesGate} from './issues.store';
+import {$issuesCombine, issuesGate} from './issues.store';
 import {IssuesList} from './issues-list';
 import {useHistory} from 'react-router-dom';
 import {Pagination} from './pagination';
-import {$repository} from '../repository.store';
 
 export const Issues: FC = () => {
-  useGate(issuesGate)
-  const routerHistory = useHistory()
-  const { page, lastPage } = useStore($meta);
-  const repository = useStore($repository)
+  useGate(issuesGate);
+  const {repository, issues, page, lastPage} = useStore($issuesCombine);
+  const routerHistory = useHistory();
 
-  const onSubmit = useCallback((event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const form = event.target as HTMLFormElement;
-    const { value: org } = form.elements.namedItem('org') as HTMLInputElement;
-    const { value: repo } = form.elements.namedItem('repo') as HTMLInputElement;
+  const onSubmit = useCallback(
+    (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      const form = event.target as HTMLFormElement;
+      const {value: org} = form.elements.namedItem('org') as HTMLInputElement;
+      const {value: repo} = form.elements.namedItem('repo') as HTMLInputElement;
 
-    if (![org, repo].every(Boolean)) return
+      if (![org, repo].every(Boolean)) return;
 
-    routerHistory.push(`/${org}/${repo}/`)
-  }, [routerHistory])
+      routerHistory.push(`/${org}/${repo}/`);
+    },
+    [routerHistory],
+  );
 
   return (
     <div>
-      <div style={{ marginBottom: 24 }}>
-        <form onSubmit={onSubmit}>
+      <div style={{marginBottom: 24}}>
+        <form onSubmit={onSubmit} key={repository.name + repository.org}>
           <input
             type="text"
             name="org"
@@ -43,7 +44,7 @@ export const Issues: FC = () => {
         </form>
       </div>
       <Pagination page={page} lastPage={lastPage} />
-      <IssuesList />
+      <IssuesList issues={issues} repository={repository} />
     </div>
   );
 };

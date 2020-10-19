@@ -13,7 +13,7 @@ type OnGetIssueParams = TRepo & IssueRouteParams;
 
 export const issueGate = createGate<IssueRouteParams>('issue gate');
 
-const onGetIssue = createEffect<OnGetIssueParams, Issue, ErrorMessage>({
+const getIssueFx = createEffect<OnGetIssueParams, Issue, ErrorMessage>({
   async handler({org, name, id}: OnGetIssueParams) {
     try {
       return await getIssue(org, name, Number(id));
@@ -23,7 +23,7 @@ const onGetIssue = createEffect<OnGetIssueParams, Issue, ErrorMessage>({
   },
 });
 
-const fxGetIssueComments = createEffect<Issue, Comment[], ErrorMessage>({
+const getCommentsFx = createEffect<Issue, Comment[], ErrorMessage>({
   async handler({comments_url}: Issue) {
     try {
       return await getComments(comments_url);
@@ -34,28 +34,28 @@ const fxGetIssueComments = createEffect<Issue, Comment[], ErrorMessage>({
 });
 
 export const $issue = createStore<Issue | null>(null)
-  .on(onGetIssue.doneData, (_, payload) => payload)
+  .on(getIssueFx.doneData, (_, payload) => payload)
   .reset(issueGate.close);
 
 export const $comments = createStore<Comment[]>([])
-  .on(fxGetIssueComments.doneData, (state, payload) => payload)
+  .on(getCommentsFx.doneData, (state, payload) => payload)
   .reset(issueGate.close);
 
-const fxGetIssue = attach({
-  effect: onGetIssue,
+const attachedGetIssue = attach({
+  effect: getIssueFx,
   mapParams: (params: IssueRouteParams, states) => ({...states, ...params}),
   source: $repository,
 });
 
 forward({
   from: issueGate.open,
-  to: fxGetIssue,
+  to: attachedGetIssue,
 });
 
 forward({
-  from: onGetIssue.doneData,
-  to: fxGetIssueComments,
+  from: getIssueFx.doneData,
+  to: getCommentsFx,
 });
 
-$error.on(onGetIssue.failData, (state, payload) => payload);
-$error.on(fxGetIssueComments.failData, (state, payload) => payload);
+$error.on(getIssueFx.failData, (state, payload) => payload);
+$error.on(getCommentsFx.failData, (state, payload) => payload);
